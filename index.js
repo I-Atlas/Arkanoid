@@ -1,196 +1,289 @@
 const canvas = document.getElementById("arkanoid")
 const ctx = canvas.getContext("2d")
 
-ctx.canvas.width = window.innerWidth
-ctx.canvas.height = window.innerHeight
+// GAME PARAMS
+const game = {
+    SIDE: 0.03,
+    BALL_SPEED: 0.6,
+    BALL_SPIN: 0.2,
+    PADDLE_SPEED: 0.6,
+    PADDLE_WIDTH: 0.1
+}
 
-let score = 0
-let lives = 3
+// DIMENSIONS
+let width, height, side
 
-const ballRadius = 10
-const paddleHeight = 10, paddleWidth = 200
+// GAME VARIABLES
+let ball, paddle
 
-let rightPressed = false
-let leftPressed = false
-
-let paddleX = (canvas.width-paddleWidth)/2
-let x = canvas.width/2, y = canvas.height/2
-let dx = 2, dy = -2
-
-let brickRowCount = 6
-let brickColumnCount = 11
-let brickWidth = 120
-let brickHeight = 40
-let brickPadding = 20
-let brickOffsetTop = 30
-let brickOffsetLeft = 30
-
-let bricks = []
-for (let column = 0; column < brickColumnCount; column++) {
-    bricks[column] = []
-    for (let row = 0; row < brickRowCount; row++) {
-        bricks[column][row] = { 
-            x: 0,
-            y: 0,
-            status: 1
-        }
+/* BALL CLASS
+The class responsible for the ball.
+*/
+class Ball {
+    constructor() {
+        this.width = side
+        this.height = side
+        this.x = paddle.x
+        this.y = paddle.y - paddle.height / 2 - this.height / 2
+        this.speed = game.BALL_SPEED * height
+        this.speedX = 0
+        this.speedY = 0
     }
 }
 
-const keyDownHandler = (e) => {
-    if(e.keyCode == 39) {
-        rightPressed = true
-    }
-    else if(e.keyCode == 37) {
-        leftPressed = true
-    }
-}
-
-const keyUpHandler = (e) => {
-    if(e.keyCode == 39) {
-        rightPressed = false
-    }
-    else if(e.keyCode == 37) {
-        leftPressed = false
+/* PADDLE CLASS
+The class responsible for the platform.
+*/
+class Paddle {
+    constructor() {
+        this.width = game.PADDLE_WIDTH * width
+        this.height = side
+        this.x = width / 2
+        this.y = height - this.height * 3
+        this.speed = game.PADDLE_SPEED * width
+        this.speedX = 0
     }
 }
 
-const mouseMoveHandler = (e) => {
-    let relativeX = e.clientX - canvas.offsetLeft
-    if (relativeX > 0 && relativeX < canvas.width) {
-        paddleX = relativeX - paddleWidth/2
-    }
-}
+/* INPUT CLASS
+The class responsible for managing the platform.
+*/
+class Input {
+    constructor() {
+        this.left =  0
+        this.right = 1
+        this.stop = 2
 
-document.addEventListener("keydown", keyDownHandler, false)
-document.addEventListener("keyup", keyUpHandler, false)
-document.addEventListener("mousemove", mouseMoveHandler, false)
-
-const collisionDetection = () => {
-    for (let column = 0; column < brickColumnCount; column++) {
-        for (let row = 0; row < brickRowCount; row++) {
-            let brick = bricks[column][row]
-            if (brick.status == 1) {
-                if (x > brick.x && x < brick.x + brickWidth && y > brick.y && y < brick.y + brickHeight) {
-                    dy = -dy
-                    brick.status = 0
-                    score++
-                    if (score == brickRowCount*brickColumnCount) {
-                        alert("WIN")
-                        document.location.reload()
-                        // clearInterval(interval)
-                    }
-                }
+        document.addEventListener("keydown", event => {
+            switch (event.keyCode) {
+                case 32: // SPACE BAR STARTS THE BALL
+                    ballStart()
+                    break
+                case 37: // LEFT ARROW MOVES PADDLE LEFT
+                    paddleMove(this.left)
+                    // console.log("37")
+                    break
+                case 39: // RIGHT ARROW MOVES PADDLE RIGHT
+                    paddleMove(this.right)
+                    break
             }
-        }
+        })
+
+        document.addEventListener("keyup", event => {
+            switch (event.keyCode) {
+                case 37: // LEFT ARROW STOPS MOVING
+                case 39: // RIGHT ARROW STOPS MOVING
+                    paddleMove(this.stop)
+                    break
+            }
+        })
     }
 }
 
-const drawBall = () => {
+/* DRAW CLASS
+The class responsible for drawing elements.
+*/
+class Draw {
+    constructor() {
+        // COLORS
+        this.backgroundColor = "rgb(0, 0, 0)"
+        this.sideColor = "rgb(94, 94, 94)"
+        this.ballColor = "rgb(255, 255, 255)"
+        this.paddleColor = "rgb(255, 255, 255)"
+
+        // DRAW GAME VARIABLES
+        this.deltaTime
+        this.lastTime
+    }
+
+    /* DRAW BACKGROUND FUNCTION
+    The function that is responsible for drawing the background of the game.
+    (#000000 (black) color)
+    */
+    drawBackground() {
+        ctx.fillStyle = this.backgroundColor
+        ctx.fillRect(0, 0, width, height)
+    }
+
+    /* DRAW SIDES FUNCTION
+    The function that is responsible for drawing the sides of the game.
+    (#5e5e5e (dark gray) color)
+    */
+    drawSides() {
+    let sideHeight = side * 0.5
+    ctx.strokeStyle = this.sideColor
     ctx.beginPath()
-    ctx.arc(x, y, ballRadius, 0, Math.PI*2)
-    ctx.fillStyle = "#D9534F"
-    ctx.fill()
-    ctx.closePath()
-}
+    ctx.moveTo(sideHeight, height)
+    ctx.lineTo(sideHeight, sideHeight)
+    ctx.lineTo(width - sideHeight, sideHeight)
+    ctx.lineTo(width - sideHeight, height)
+    ctx.stroke()
+    }
 
-const drawPaddle = () => {
-    ctx.beginPath()
-    ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight)
-    ctx.fillStyle = "#F2C273"
-    ctx.fill()
-    ctx.closePath()
-}
+    /* DRAW BALL FUNCTION
+    The function that is responsible for drawing the ball of the game.
+    (#ffffff (white) color)
+    */
+    drawBall() {
+        ctx.fillStyle = this.ballColor
+        ctx.fillRect(ball.x - ball.width * 0.5, ball.y - ball.height * 0.5, ball.width, ball.height)
+    }
 
-const drawBricks = () => {
-    for(let column = 0; column < brickColumnCount; column++) {
-        for(let row = 0; row < brickRowCount; row++) {
-            if (bricks[column][row].status == 1) {
-                let brickX = (column * (brickWidth + brickPadding)) + brickOffsetLeft
-                let brickY = (row * (brickHeight + brickPadding)) + brickOffsetTop
+    /* DRAW PADDLE FUNCTION
+    The function that is responsible for drawing the paddle of the game.
+    (#ffffff (white) color)
+    */
+    drawPaddle() {
+        ctx.fillStyle = this.paddleColor
+        ctx.fillRect(paddle.x - paddle.width * 0.5, paddle.y - paddle.height * 0.5, paddle.width, paddle.height)
+    }
 
-                bricks[column][row] = {
-                    x: brickX,
-                    y: brickY,
-                    status: 1
-                }
-
-                ctx.beginPath()
-                ctx.rect(brickX, brickY, brickWidth, brickHeight)
-                ctx.fillStyle = "#F81941"
-                ctx.fill()
-                ctx.closePath()
-            }
+    /* DRAW GAME FUNCTION
+    The main game function,
+    which is responsible for rendering and updating elements.
+    */
+    drawGame = (timestamp) => {
+        if (!this.lastTime) {
+            this.lastTime = timestamp
         }
+
+        // TIME DIFFERENCE CALCULATION
+        this.deltaTime = (timestamp - this.lastTime) * 0.001 // 0.001 - IS SECONDS
+        this.lastTime = timestamp
+
+        // UPDATE ELEMENTS
+        paddleUpdate(this.deltaTime)
+        ballUpdate(this.deltaTime)
+
+        // GAME ELEMENTS
+        this.drawBackground()
+        this.drawSides()
+        this.drawBall()
+        this.drawPaddle()
+
+        // CREATE NEXT GAME LOOP
+        requestAnimationFrame(this.drawGame)
     }
 }
 
-const drawScore = () => {
-    ctx.font = "20px Roboto"
-    ctx.fillStyle = "black"
-    ctx.fillText("Score: "+score, 15,25)
+/* RESPONSIVE CANVAS DESIGN FUNCTION
+The function responsible for the responsiveness of the canvas.
+*/
+const responsive = () => {
+    height = window.innerHeight
+    width = window.innerWidth
+    side = game.SIDE * (height < width ? height : width)
+    canvas.width = width
+    canvas.height = height
+    ctx.lineWidth = side
+    startNewGame()
+}
+window.addEventListener("resize", responsive)
+
+// START NEW GAME HANDLER
+const startNewGame = () => {
+    paddle = new Paddle()
+    ball = new Ball()
+    input = new Input()
 }
 
-const drawLives = () => {
-    ctx.font = "20px Roboto"
-    ctx.fillStyle = "black"
-    ctx.fillText("Lives: "+lives, canvas.width - 75,25)
+// BALL SPEED HANDLER
+const ballSpeed = (angle) => {
+    // KEEPS ANGLE BETWEEN 30° AND 150°
+    if (angle < Math.PI / 6) {
+        angle = Math.PI / 6
+    } else if (angle > Math.PI * 5 / 6) {
+        angle = Math.PI * 5 / 6
+    }
+    // UPDATES THE SPEED OF THE BALL MOVEMENT IN THE X AND Y COORDINATES
+    ball.speedX = ball.speed * Math.cos(angle)
+    ball.speedY = -ball.speed * Math.sin(angle)
 }
 
-const drawGame = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    drawBricks()
-    drawBall()
-    drawPaddle()
-    collisionDetection()
-    drawScore()
-    drawLives()
-   
-    if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
-        dx = -dx
-    }
-    
-    if(y + dy < ballRadius + paddleHeight) {
-        dy = -dy
-    } else if (y + dx > canvas.height-ballRadius) {
-        if (x > paddleX && x < paddleX + paddleWidth) {
-            dy = -dy
-        } else {
-            lives--
-            if (!lives) {
-                alert("Game Over")
-                document.location.reload()
-                // clearInterval(interval)
-            } else {
-                x = canvas.width/2
-                y = canvas.height-40
-                dx = 2
-                dy = -2
-                paddleX = (canvas.width-paddleWidth)/2
-            }
-
-            // Swal.fire({
-            //     title: `GAME OVER`,
-            //     text: '',
-            //     icon: 'error',
-            //     })
-
-            // alert("Game over")
-            // document.location.reload()
-            // clearInterval(interval)
-        }
+// BALL START HANDLER
+const ballStart = () => {
+    // IF BALL IN MOTION
+    if (ball.speedY != 0) {
+        return false
     }
 
-    if(rightPressed && paddleX < canvas.width-paddleWidth) {
-        paddleX += 10;
-    }
-    else if(leftPressed && paddleX > 0) {
-        paddleX -= 10;
-    }
-
-    x += dx
-    y += dy
-    requestAnimationFrame(drawGame)
+    // RANDOM BALL MOVEMENT ANGLE BETWEEN 60° AND 150°
+    let angle = Math.random() * Math.PI / 2 + Math.PI / 3
+    ballSpeed(angle)
+    return true
 }
 
-drawGame()
+// BALL UPDATE HANDLER
+const ballUpdate = (delta) => {
+    ball.x += ball.speedX * delta
+    ball.y += ball.speedY * delta
+
+    // BALL BOUNCE OFF THE SIDES
+    if (ball.x < side + ball.width * 0.5) {
+        ball.x = side + ball.width * 0.5
+        ball.speedX = -ball.speedX
+    } else if (ball.x > width - side - ball.width * 0.5) {
+        ball.x = width - side - ball.width * 0.5
+        ball.speedX = -ball.speedX
+    } else if (ball.y < side + ball.height * 0.5) {
+        ball.y = side + ball.height * 0.5
+        ball.speedY = -ball.speedY
+    }
+
+    // BALL BOUNCE OFF THE PLATFORM
+    if (ball.y > paddle.y - paddle.height * 0.5 - ball.height * 0.5
+        && ball.y < paddle.y
+        && ball.x > paddle.x - paddle.width * 0.5 - ball.width * 0.5
+        && ball.x < paddle.x + paddle.width * 0.5 + ball.width * 0.5) {
+            ball.y = paddle.y - paddle.height * 0.5 - ball.height * 0.5
+            ball.speedY = -ball.speedY
+
+            // CHANGES THE BALL BOUNCE ANGLE (BASED ON THE BALL SPIN)
+            let angle = Math.atan2(-ball.speedY, ball.speedX)
+            angle += (Math.random() * Math.PI / 2 - Math.PI / 4) * game.BALL_SPIN
+            ballSpeed(angle)
+    }
+
+    // MOVES THE BALL ALONG WITH THE PLATFORM (WHEN IT IS STATIC)
+    if (ball.speedY == 0) {
+        ball.x = paddle.x
+    }
+}
+
+// PADDLE MOVEMENT HANDLER
+const paddleMove = (DIRECTION) => {
+    switch (DIRECTION) {
+        case input.left:
+            paddle.speedX = -paddle.speed
+            break
+        case input.right:
+            paddle.speedX = paddle.speed
+            break
+        case input.stop:
+            paddle.speedX = 0
+            break
+    }
+}
+
+// PADDLE UPDATE HANDLER
+const paddleUpdate = (delta) => {
+    paddle.x += paddle.speedX * delta
+    // stop paddle at sides
+    if (paddle.x < side + paddle.width * 0.5) {
+        paddle.x = side + paddle.width * 0.5
+    } else if (paddle.x > width - side - paddle.width * 0.5) {
+        paddle.x = width - side - paddle.width * 0.5
+    }
+}
+
+// CALL DRAW CLASS
+draw = new Draw()
+
+// CREATE NEW GAME HANDLER
+const createNewGame = () => {
+    requestAnimationFrame(draw.drawGame)
+    startNewGame()
+    responsive()
+}
+
+createNewGame()
