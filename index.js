@@ -244,6 +244,11 @@ const ballUpdate = (delta) => {
             ballSpeed(angle)
     }
 
+    // OUT OF BOUNDS HANDLER
+    if (ball.y > height) {
+        startNewGame()
+    }
+
     // MOVES THE BALL ALONG WITH THE PLATFORM (WHEN IT IS STATIC)
     if (ball.speedY == 0) {
         ball.x = paddle.x
