@@ -1,4 +1,4 @@
-import { ctx, ball, paddle, bricks, color, left, top, width, height, side, paddleUpdate, ballUpdate } from "./index"
+import { ctx, ball, paddle, bricks, width, height, side, paddleUpdate, ballUpdate } from "./index"
 
 
 /* DRAW CLASS

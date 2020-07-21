@@ -1,23 +1,10 @@
-// import Draw from "./draw"
+import Draw from "./draw"
 import Input from "./input"
+import { game } from "./constants"
 
 // CANVAS
 const canvas = document.getElementById("arkanoid")
 export const ctx = canvas.getContext("2d")
-
-// GAME PARAMS
-const game = {
-    SIDE: 0.03,
-    BALL_SPEED: 0.6,
-    BALL_SPIN: 0.2,
-    PADDLE_SPEED: 0.6,
-    PADDLE_WIDTH: 0.1,
-    BRICK_ROWS: 8,
-    BRICK_COLUMN: 9,
-    BRICK_GAP: 0.3,
-    BRICK_MARGIN: 6,
-    GAME_LEVEL: 10
-}
 
 // DIMENSIONS
 export let width, height, side
@@ -30,8 +17,8 @@ The class responsible for the ball.
 */
 class Ball {
     constructor() {
-        this.width = side
-        this.height = side
+        this.width = side / 1.5
+        this.height = side / 1.5
         this.x = paddle.x
         this.y = paddle.y - paddle.height / 2 - this.height / 2
         this.speed = game.BALL_SPEED * height
@@ -61,13 +48,17 @@ class Brick {
     constructor(left, top, width, height, color) {
         this.width = width
         this.height = height
-        this.bot = top + height
+        this.bottom = top + height
         this.left = left
         this.right = left + width
         this.top = top
         this.color = color
     }
 }
+
+// CALL THE CLASSES
+const input = new Input()
+const draw = new Draw()
 
 /* RESPONSIVE CANVAS DESIGN FUNCTION
 The function responsible for the responsiveness of the canvas.
@@ -84,7 +75,7 @@ const responsive = () => {
 window.addEventListener("resize", responsive)
 
 // START NEW GAME HANDLER
-const startNewGame = () => {
+export const startNewGame = () => {
     paddle = new Paddle()
     ball = new Ball()
     level = 0
@@ -185,21 +176,24 @@ export const paddleUpdate = (delta) => {
     }
 }
 
+/* CREATE BRICKS FUNCTION
+The function responsible for the bricks creation.
+*/
 export const createBricks = () => {
 
     // ROW DIMENTIONS
     let minimumLevelY = side
     let maximumLevelY = ball.y - ball.height * 3.5
     let totalSpaceY = maximumLevelY - minimumLevelY
-    let totalRows = game.BRICK_MARGIN + game.BRICK_ROWS + game.GAME_LEVEL * 2
+    let totalRows = game.BRICK_MARGIN + game.BRICK_ROWS + game.GAME_LEVEL
     let rowHeight = totalSpaceY / totalRows
     let gap = side * game.BRICK_GAP
-    let height = rowHeight - gap
+    let brickHeight = rowHeight - gap
 
     //COLUMN DIMENTIONS
     let totalSpaceX = width - side * 2
     let columnWidth = (totalSpaceX - gap) / game.BRICK_COLUMN
-    let width = columnWidth - gap
+    let brickWidth = columnWidth - gap
 
     // POPULATE THE BRICKS ARRAY
     bricks = []
@@ -208,117 +202,18 @@ export const createBricks = () => {
     let color, left, top;
     for (let i = 0; i < rows; i++) {
         bricks[i] = []
-        color = "white"
+        color = "rgb(252, 155, 55)"
         top = side + (game.BRICK_MARGIN + i) * rowHeight
         for (let j = 0; j < columns; j++) {
             left = side + gap + j * columnWidth
-            bricks[i][j] = new Brick(left, top, width, height, color)
+            bricks[i][j] = new Brick(left, top, brickWidth, brickHeight, color)
         }
-    }
-    
+    }    
 }
-
-export default class Draw {
-    constructor() {
-        // COLORS
-        this.backgroundColor = "rgb(0, 0, 0)"
-        this.sideColor = "rgb(94, 94, 94)"
-        this.ballColor = "rgb(255, 255, 255)"
-        this.paddleColor = "rgb(255, 255, 255)"
-
-        // DRAW GAME VARIABLES
-        this.deltaTime
-        this.lastTime
-    }
-
-    /* DRAW BACKGROUND FUNCTION
-    The function that is responsible for drawing the background of the game.
-    (#000000 (black) color)
-    */
-    drawBackground() {
-        ctx.fillStyle = this.backgroundColor
-        ctx.fillRect(0, 0, width, height)
-    }
-
-    /* DRAW SIDES FUNCTION
-    The function that is responsible for drawing the sides of the game.
-    (#5e5e5e (dark gray) color)
-    */
-    drawSides() {
-    let sideHeight = side * 0.5
-    ctx.strokeStyle = this.sideColor
-    ctx.beginPath()
-    ctx.moveTo(sideHeight, height)
-    ctx.lineTo(sideHeight, sideHeight)
-    ctx.lineTo(width - sideHeight, sideHeight)
-    ctx.lineTo(width - sideHeight, height)
-    ctx.stroke()
-    }
-
-    /* DRAW BALL FUNCTION
-    The function that is responsible for drawing the ball of the game.
-    (#ffffff (white) color)
-    */
-    drawBall() {
-        ctx.fillStyle = this.ballColor
-        ctx.fillRect(ball.x - ball.width * 0.5, ball.y - ball.height * 0.5, ball.width, ball.height)
-    }
-
-    /* DRAW PADDLE FUNCTION
-    The function that is responsible for drawing the paddle of the game.
-    (#ffffff (white) color)
-    */
-    drawPaddle() {
-        ctx.fillStyle = this.paddleColor
-        ctx.fillRect(paddle.x - paddle.width * 0.5, paddle.y - paddle.height * 0.5, paddle.width, paddle.height)
-    }
-
-    drawBricks() {
-        for (let row of bricks) {
-            for (let brick of row) {
-                ctx.fillStyle = brick.color
-                ctx.fillRect(brick.left, brick.top, brick.width, brick.height)
-            }
-        }
-    }
-
-    /* DRAW GAME FUNCTION
-    The main game function,
-    which is responsible for rendering and updating elements.
-    */
-    drawGame = (timestamp) => {
-        if (!this.lastTime) {
-            this.lastTime = timestamp
-        }
-
-        // TIME DIFFERENCE CALCULATION
-        this.deltaTime = (timestamp - this.lastTime) * 0.001 // 0.001 - IS SECONDS
-        this.lastTime = timestamp
-
-        // UPDATE ELEMENTS
-        paddleUpdate(this.deltaTime)
-        ballUpdate(this.deltaTime)
-
-        // GAME ELEMENTS
-        this.drawBackground()
-        this.drawSides()
-        this.drawBall()
-        this.drawPaddle()
-        this.drawBricks()
-
-        // CREATE NEXT GAME LOOP
-        requestAnimationFrame(this.drawGame)
-    }
-}
-
-// CALL CLASSES
-const input = new Input()
-const draw = new Draw()
 
 // CREATE NEW GAME HANDLER
 const createNewGame = () => {
     requestAnimationFrame(draw.drawGame)
-    startNewGame()
     responsive()
 }
 
