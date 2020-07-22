@@ -1,6 +1,5 @@
-import { paddle, ball, ctx, bricks, width, height, side } from "../constants"
-import { paddleUpdate } from "../functions/paddle"
-import { ballUpdate } from "../functions/ball"
+import { ctx } from "../constants"
+import { ballUpdate, paddleUpdate, ball, paddle, bricks, width, height, side } from "../functions/functions"
 
 /* DRAW CLASS
 The class responsible for drawing elements.

@@ -1,5 +1,4 @@
-import { paddleMove } from "../functions/paddle"
-import { ballStart } from "../functions/ball"
+import { ballStart, paddleMove } from "../functions/functions"
 
 /* INPUT CLASS
 The class responsible for managing the platform.
