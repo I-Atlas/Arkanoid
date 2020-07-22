@@ -114,23 +114,23 @@ export const ballUpdate = (delta) => {
     ball.y += ball.speedY * delta
 
     // BALL BOUNCE OFF THE SIDES
-    if (ball.x < side + ball.width * 0.5) {
-        ball.x = side + ball.width * 0.5
+    if (ball.x < side + ball.width / 2) {
+        ball.x = side + ball.width / 2
         ball.speedX = -ball.speedX
-    } else if (ball.x > width - side - ball.width * 0.5) {
-        ball.x = width - side - ball.width * 0.5
+    } else if (ball.x > width - side - ball.width / 2) {
+        ball.x = width - side - ball.width / 2
         ball.speedX = -ball.speedX
-    } else if (ball.y < side + ball.height * 0.5) {
-        ball.y = side + ball.height * 0.5
+    } else if (ball.y < side + ball.height / 2) {
+        ball.y = side + ball.height / 2
         ball.speedY = -ball.speedY
     }
 
     // BALL BOUNCE OFF THE PLATFORM
-    if (ball.y > paddle.y - paddle.height * 0.5 - ball.height * 0.5
+    if (ball.y > paddle.y - paddle.height / 2 - ball.height / 2
         && ball.y < paddle.y
-        && ball.x > paddle.x - paddle.width * 0.5 - ball.width * 0.5
-        && ball.x < paddle.x + paddle.width * 0.5 + ball.width * 0.5) {
-            ball.y = paddle.y - paddle.height * 0.5 - ball.height * 0.5
+        && ball.x > paddle.x - paddle.width / 2 - ball.width / 2
+        && ball.x < paddle.x + paddle.width / 2 + ball.width / 2) {
+            ball.y = paddle.y - paddle.height / 2 - ball.height / 2
             ball.speedY = -ball.speedY
 
             // CHANGES THE BALL BOUNCE ANGLE (BASED ON THE BALL SPIN)
@@ -169,10 +169,10 @@ export const paddleMove = (event) => {
 export const paddleUpdate = (delta) => {
     paddle.x += paddle.speedX * delta
     // PLATFORM STOPS AT SIDES
-    if (paddle.x < side + paddle.width * 0.5) {
-        paddle.x = side + paddle.width * 0.5
-    } else if (paddle.x > width - side - paddle.width * 0.5) {
-        paddle.x = width - side - paddle.width * 0.5
+    if (paddle.x < side + paddle.width / 2) {
+        paddle.x = side + paddle.width / 2
+    } else if (paddle.x > width - side - paddle.width / 2) {
+        paddle.x = width - side - paddle.width / 2
     }
 }
 

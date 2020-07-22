@@ -1,5 +1,5 @@
 import { ctx } from "../constants"
-import { ballUpdate, paddleUpdate, ball, paddle, bricks, width, height, side } from "../functions/functions"
+import { ballUpdate, paddleUpdate, bricksUpdate, ball, paddle, bricks, width, height, side } from "../functions/functions"
 
 /* DRAW CLASS
 The class responsible for drawing elements.
@@ -7,10 +7,10 @@ The class responsible for drawing elements.
 export default class Draw {
     constructor() {
         // COLORS
-        this.backgroundColor = "rgb(0, 0, 0)"
-        this.sideColor = "rgb(94, 94, 94)"
+        this.backgroundColor = "rgb(11, 31, 42)"
+        this.sideColor = "rgb(164, 170, 174)"
         this.ballColor = "rgb(255, 255, 255)"
-        this.paddleColor = "rgb(255, 255, 255)"
+        this.paddleColor = "rgb(66, 133, 244)"
 
         // DRAW GAME VARIABLES
         this.deltaTime
@@ -19,7 +19,7 @@ export default class Draw {
 
     /* DRAW BACKGROUND FUNCTION
     The function that is responsible for drawing the background of the game.
-    (#000000 (black) color)
+    (#0B1F2A (deep blue) color)
     */
     drawBackground() {
         ctx.fillStyle = this.backgroundColor
@@ -28,10 +28,10 @@ export default class Draw {
 
     /* DRAW SIDES FUNCTION
     The function that is responsible for drawing the sides of the game.
-    (#5e5e5e (dark gray) color)
+    (#A4AAAE (mercedes gray) color)
     */
     drawSides() {
-    let sideHeight = side * 0.5
+    let sideHeight = side / 2
     ctx.strokeStyle = this.sideColor
     ctx.beginPath()
     ctx.moveTo(sideHeight, height)
@@ -47,16 +47,16 @@ export default class Draw {
     */
     drawBall() {
         ctx.fillStyle = this.ballColor
-        ctx.fillRect(ball.x - ball.width * 0.5, ball.y - ball.height * 0.5, ball.width, ball.height)
+        ctx.fillRect(ball.x - ball.width / 2, ball.y - ball.height / 2, ball.width, ball.height)
     }
 
     /* DRAW PADDLE FUNCTION
     The function that is responsible for drawing the paddle of the game.
-    (#ffffff (white) color)
+    (#4285F4 (blue) color)
     */
     drawPaddle() {
         ctx.fillStyle = this.paddleColor
-        ctx.fillRect(paddle.x - paddle.width * 0.5, paddle.y - paddle.height * 0.5, paddle.width, paddle.height)
+        ctx.fillRect(paddle.x - paddle.width / 2, paddle.y - paddle.height / 2, paddle.width, paddle.height)
     }
 
     /* DRAW BRICKS FUNCTION
@@ -66,6 +66,9 @@ export default class Draw {
     drawBricks() {
         for (let row of bricks) {
             for (let brick of row) {
+                if (brick === null) {
+                    continue
+                }
                 ctx.fillStyle = brick.color
                 ctx.fillRect(brick.left, brick.top, brick.width, brick.height)
             }
@@ -88,6 +91,8 @@ export default class Draw {
         // UPDATE ELEMENTS
         paddleUpdate(this.deltaTime)
         ballUpdate(this.deltaTime)
+        bricksUpdate(this.deltaTime)
+
 
         // GAME ELEMENTS
         this.drawBackground()
