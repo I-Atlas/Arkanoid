@@ -1,4 +1,5 @@
-import { ballStart, paddleMove } from "../functions/functions"
+import { ballStart, paddleMove, startNewGame,
+         gameOver, gameWin } from "../functions/functions"
 
 /* INPUT CLASS
 The class responsible for managing the platform.
@@ -14,6 +15,9 @@ export default class Input {
             switch (event.keyCode) {
                 case 32: // SPACE BAR STARTS THE BALL
                     ballStart()
+                    if (gameOver == true || gameWin == true) {
+                        startNewGame()
+                    }
                     break
                 case 37: // LEFT ARROW MOVES PADDLE LEFT
                     paddleMove(this.left)
