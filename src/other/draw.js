@@ -31,7 +31,7 @@ export default class Draw {
     (#5e5e5e (dark gray) color)
     */
     drawSides() {
-    let sideHeight = side * 0.5
+    let sideHeight = side / 2
     ctx.strokeStyle = this.sideColor
     ctx.beginPath()
     ctx.moveTo(sideHeight, height)
@@ -47,7 +47,7 @@ export default class Draw {
     */
     drawBall() {
         ctx.fillStyle = this.ballColor
-        ctx.fillRect(ball.x - ball.width * 0.5, ball.y - ball.height * 0.5, ball.width, ball.height)
+        ctx.fillRect(ball.x - ball.width / 2, ball.y - ball.height / 2, ball.width, ball.height)
     }
 
     /* DRAW PADDLE FUNCTION
@@ -56,7 +56,7 @@ export default class Draw {
     */
     drawPaddle() {
         ctx.fillStyle = this.paddleColor
-        ctx.fillRect(paddle.x - paddle.width * 0.5, paddle.y - paddle.height * 0.5, paddle.width, paddle.height)
+        ctx.fillRect(paddle.x - paddle.width / 2, paddle.y - paddle.height / 2, paddle.width, paddle.height)
     }
 
     drawBricks() {

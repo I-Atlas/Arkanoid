@@ -8,11 +8,11 @@ export const game = {
     BALL_SPIN: 0.2,
     PADDLE_SPEED: 0.6,
     PADDLE_WIDTH: 0.1,
-    BRICK_ROWS: 8,
-    BRICK_COLUMN: 9,
+    BRICK_ROWS: 4,
+    BRICK_COLUMN: 8,
     BRICK_GAP: 0.3,
     BRICK_MARGIN: 6,
-    GAME_LEVEL: 10
+    MAXIMUM_LEVEL: 5
 }
 
 // CALL CLASSES
