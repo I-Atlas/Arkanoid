@@ -4,11 +4,16 @@ import Brick from "./brick"
 import { ctx, canvas, input, game } from "../constants"
 
 // DIMENSIONS
-export let width, height, side
+export let width, height, side, margin
 
 // GAME VARIABLES
-export let ball, paddle, bricks = [], level
+export let ball, paddle, bricks = [], bricksCount,
+           level, lives, score, bestScore,
+           textHight, textWidth,
+           gameOver, gameWin
 
+           //let textWidth = width - margin * 2
+           //let margin = side * 5
 /* RESPONSIVE CANVAS DESIGN FUNCTION
 The function responsible for the responsiveness of the canvas.
 */
@@ -25,11 +30,43 @@ export const responsive = () => {
 window.addEventListener("resize", responsive)
 
 // START NEW GAME HANDLER
-const startNewGame = () => {
+export const startNewGame = () => {
+    level = 3 // 0 -- game.MAXIMUM_LEVEL
+    lives = game.LIVES
+    score = 0
+
+    gameOver = false
+    gameWin = false
+
+    let localScore = localStorage.getItem(game.SCORE)
+    if (localScore == null) {
+        bestScore = 0
+    } else {
+        bestScore = localScore
+    }
+
+    startNewLevel()
+}
+
+// START NEW LEVEL HANDLER
+const startNewLevel = () => {
+    playerUpdate()
+    createBricks()
+}
+
+// PLAYER (BALL AND PADDLE) UPDATE HANDLER
+const playerUpdate = () => {
     paddle = new Paddle()
     ball = new Ball()
-    level = 2 // 0 - game.MAXIMUM_LEVEL
-    createBricks()
+}
+
+// OUT OF BOTTOM BOUNDS HANDLER
+const outOfBounds = () => {
+    lives--
+    if (lives == 0) {
+        gameOver = true
+    }
+    playerUpdate()
 }
 
 // BALL SPEED HANDLER
@@ -91,8 +128,7 @@ export const ballUpdate = (delta) => {
 
     // OUT OF BOUNDS HANDLER
     if (ball.y > height) {
-        startNewGame()
-        // start.newGame
+        outOfBounds()
     }
 
     // MOVES THE BALL ALONG WITH THE PLATFORM (WHEN IT IS STATIC)
@@ -132,36 +168,47 @@ export const paddleUpdate = (delta) => {
 The function responsible for the bricks creation.
 */
 const createBricks = () => {
-
-    // ROW DIMENTIONS
     let minimumLevelY = side
     let maximumLevelY = ball.y - ball.height * 2.5
+
     let totalSpaceY = maximumLevelY - minimumLevelY
+    let totalSpaceX = width - side * 2
+
     let totalRows = game.BRICK_MARGIN + game.BRICK_ROWS + game.MAXIMUM_LEVEL
     let rowHeight = totalSpaceY / totalRows
-    let gap = side * game.BRICK_GAP
-    let brickHeight = rowHeight - gap
 
-    // COLUMN DIMENTIONS
-    let totalSpaceX = width - side * 2
+    let gap = side * game.BRICK_GAP
+    let columns = game.BRICK_COLUMN
+    let rows = game.BRICK_ROWS + level * 2 - 2
+
     let columnWidth = (totalSpaceX - gap) / game.BRICK_COLUMN
+
+    let brickHeight = rowHeight - gap
     let brickWidth = columnWidth - gap
+    
+    let top, left, color, grade, supremeGrade, score
 
     // FILL THE BRICKS ARRAY
-    let columns = game.BRICK_COLUMN
-    let rows = game.BRICK_ROWS + level * 2
-    let color, left, top, grade, supremeGrade
-
     for (let i = 0; i < rows; i++) {
-        bricks[i] = []
         top = side + (game.BRICK_MARGIN + i) * rowHeight
-        supremeGrade = rows / 2 - 1
-        grade = Math.floor(i / 2)
-        color = brickColor(grade, supremeGrade)
+        margin = side * 5
 
+        grade = Math.floor(i / 2)
+        supremeGrade = rows / 2
+
+        textHight = rowHeight * game.BRICK_MARGIN / 2
+        textWidth = width - margin * 2
+
+        bricks[i] = []
+        bricksCount = columns* rows
+
+        color = brickColor(grade, supremeGrade)
+        score = (supremeGrade - grade) * 2
+        
         for (let j = 0; j < columns; j++) {
             left = side + gap + j * columnWidth
-            bricks[i][j] = new Brick(left, top, brickWidth, brickHeight, color)
+
+            bricks[i][j] = new Brick(left, top, brickWidth, brickHeight, color, score)
         }
     }    
 }
@@ -177,9 +224,9 @@ const brickColor = (grade, supremeGrade) => {
     // red = 0, orange = 0.33, yellow = 0.66, green = 1
     let red, green, blue
 
-    if (section <= 0.66) {
+    if (section <= 0.67) {
         red = 255
-        green = 255 * section / 0.66
+        green = 255 * section / 0.67
         blue = 255 * section / 3
 
     } else {
@@ -198,10 +245,33 @@ export const bricksUpdate = () => {
     for (let i = 0; i < bricks.length; i++) {
         for (let j = 0; j < game.BRICK_COLUMN; j++) {
             if (bricks[i][j] != null && bricks[i][j].collision(ball)) {
+                scoreUpdate(bricks[i][j].score)
                 bricks[i][j] = null
+                bricksCount--
                 ball.speedY = -ball.speedY
                 break
             }
         }
+    }
+
+    if (bricksCount == 0) {
+        if (level < game.MAXIMUM_LEVEL) {
+            level++
+            startNewLevel()
+        } else {
+            gameOver = false
+            gameWin = true
+            playerUpdate()
+        }
+    }
+}
+
+// SCORE UPDATE HANDLER
+const scoreUpdate = (brickScore) => {
+    score += brickScore
+
+    if (score > bestScore) {
+        bestScore = score
+        localStorage.setItem(game.SCORE, bestScore)
     }
 }

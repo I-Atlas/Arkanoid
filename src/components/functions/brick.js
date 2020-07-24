@@ -2,7 +2,7 @@
 The class responsible for the bricks.
 */
 export default class Brick {
-    constructor(left, top, width, height, color) {
+    constructor(left, top, width, height, color, score) {
         this.width = width
         this.height = height
         this.bottom = top + height
@@ -10,6 +10,7 @@ export default class Brick {
         this.right = left + width
         this.top = top
         this.color = color
+        this.score = score
 
         this.collision = (ball) => {
             let ballTop = ball.y - ball.height / 2

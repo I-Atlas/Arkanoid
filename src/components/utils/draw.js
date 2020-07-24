@@ -1,5 +1,10 @@
-import { ctx } from "../constants"
-import { ballUpdate, paddleUpdate, bricksUpdate, ball, paddle, bricks, width, height, side } from "../functions/functions"
+import { ctx, game } from "../constants"
+import { ballUpdate, paddleUpdate, bricksUpdate,
+         ball, paddle, bricks,
+         width, height, side, margin,
+         lives, level, score, bestScore,
+         textHight, textWidth,
+         gameOver, gameWin } from "../functions/functions"
 
 /* DRAW CLASS
 The class responsible for drawing elements.
@@ -11,6 +16,16 @@ export default class Draw {
         this.sideColor = "rgb(164, 170, 174)"
         this.ballColor = "rgb(255, 255, 255)"
         this.paddleColor = "rgb(66, 133, 244)"
+        this.textColor = "rgb(255, 255, 255)"
+        
+        // TEXT
+        this.fontText = "Roboto"
+        this.levelText = "LEVEL"
+        this.livesText = "LIVES"
+        this.scoreText = "SCORE"
+        this.bestScoreText = "BEST"
+        this.gameOverText = "GAME OVER"
+        this.gameWinText = "YOU WIN"
 
         // DRAW GAME VARIABLES
         this.deltaTime
@@ -26,12 +41,58 @@ export default class Draw {
         ctx.fillRect(0, 0, width, height)
     }
 
+    /* DRAW BACKGROUND FUNCTION
+    The function that is responsible for drawing all text of the game.
+    (#ffffff (white) color)
+    */
+    drawText() {
+        let labelSize = textHight / 2
+        
+        let levelX = width / 2.5
+        let levelWidth = textWidth / 5
+
+        let livesX = margin
+        let livesWidth = textWidth / 4
+
+        let scoreX = width / 1.7
+        let scoreWidth = textWidth / 5
+
+        let bestScoreX = width - margin
+        let bestScoreWidth = textWidth / 4
+
+        let label = side + labelSize
+        let value = label + textHight
+        
+        ctx.fillStyle = this.textColor
+        ctx.font = `${labelSize}px ${this.fontText}`
+        ctx.textAlign = "center"
+
+        ctx.fillText(this.levelText, levelX, label, levelWidth)
+        ctx.fillText(level, levelX, value, levelWidth)
+
+        ctx.fillText(this.livesText, livesX, label, livesWidth)
+        ctx.fillText(`${lives}|${game.LIVES}`, livesX, value, livesWidth)
+
+        ctx.fillText(this.scoreText, scoreX, label, scoreWidth)
+        ctx.fillText(score, scoreX, value, scoreWidth)
+
+        ctx.fillText(this.bestScoreText, bestScoreX, label, bestScoreWidth)
+        ctx.fillText(bestScore, bestScoreX, value, bestScoreWidth)
+
+        // (GAME OVER) OR (YOU WIN) TEXT
+        if (gameOver == true || gameWin == true) {
+            let gameText = gameOver ? this.gameOverText : this.gameWinText
+            ctx.fillText(gameText, width / 2, paddle.y - textHight, textWidth)
+        }
+    }
+
     /* DRAW SIDES FUNCTION
     The function that is responsible for drawing the sides of the game.
     (#A4AAAE (mercedes gray) color)
     */
     drawSides() {
     let sideHeight = side / 2
+
     ctx.strokeStyle = this.sideColor
     ctx.beginPath()
     ctx.moveTo(sideHeight, height)
@@ -69,6 +130,7 @@ export default class Draw {
                 if (brick === null) {
                     continue
                 }
+
                 ctx.fillStyle = brick.color
                 ctx.fillRect(brick.left, brick.top, brick.width, brick.height)
             }
@@ -89,13 +151,15 @@ export default class Draw {
         this.lastTime = timestamp
 
         // UPDATE ELEMENTS
-        paddleUpdate(this.deltaTime)
-        ballUpdate(this.deltaTime)
-        bricksUpdate(this.deltaTime)
-
-
+        if (gameOver == false || gameWin == false) {
+            paddleUpdate(this.deltaTime)
+            ballUpdate(this.deltaTime)
+            bricksUpdate(this.deltaTime)
+        }
+        
         // GAME ELEMENTS
         this.drawBackground()
+        this.drawText()
         this.drawSides()
         this.drawBall()
         this.drawPaddle()
