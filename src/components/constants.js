@@ -15,7 +15,7 @@ export const game = {
     MAXIMUM_LEVEL: 10,
     LIVES: 3,
     SCORE: 0,
-    ENHANCEMENT_CHANCE: 1,
+    ENHANCEMENT_CHANCE: 0.2,
     ENHANCEMENT_SPEED: 0.15
 }
 
