@@ -1,6 +1,7 @@
-import { ctx, game } from "../constants"
-import { ballUpdate, paddleUpdate, bricksUpdate,
+import { ctx, game, enhancement } from "../constants"
+import { ballUpdate, paddleUpdate, bricksUpdate, enhancementUpdate,
          ball, paddle, bricks,
+         enhancements, enhancementExtension, enhancementSuper, enhancementGlue, 
          width, height, side, margin,
          lives, level, score, bestScore,
          textHight, textWidth,
@@ -46,19 +47,13 @@ export default class Draw {
     (#ffffff (white) color)
     */
     drawText() {
+        let allTextWidth = textWidth / 5
         let labelSize = textHight / 2
         
         let levelX = width / 2.5
-        let levelWidth = textWidth / 5
-
         let livesX = margin
-        let livesWidth = textWidth / 4
-
         let scoreX = width / 1.7
-        let scoreWidth = textWidth / 5
-
         let bestScoreX = width - margin
-        let bestScoreWidth = textWidth / 4
 
         let label = side + labelSize
         let value = label + textHight
@@ -67,17 +62,17 @@ export default class Draw {
         ctx.font = `${labelSize}px ${this.fontText}`
         ctx.textAlign = "center"
 
-        ctx.fillText(this.levelText, levelX, label, levelWidth)
-        ctx.fillText(level, levelX, value, levelWidth)
+        ctx.fillText(this.levelText, levelX, label, allTextWidth)
+        ctx.fillText(level, levelX, value, allTextWidth)
 
-        ctx.fillText(this.livesText, livesX, label, livesWidth)
-        ctx.fillText(`${lives}|${game.LIVES}`, livesX, value, livesWidth)
+        ctx.fillText(this.livesText, livesX, label, allTextWidth)
+        ctx.fillText(`${lives}|${game.LIVES}`, livesX, value, allTextWidth)
 
-        ctx.fillText(this.scoreText, scoreX, label, scoreWidth)
-        ctx.fillText(score, scoreX, value, scoreWidth)
+        ctx.fillText(this.scoreText, scoreX, label, allTextWidth)
+        ctx.fillText(score, scoreX, value, allTextWidth)
 
-        ctx.fillText(this.bestScoreText, bestScoreX, label, bestScoreWidth)
-        ctx.fillText(bestScore, bestScoreX, value, bestScoreWidth)
+        ctx.fillText(this.bestScoreText, bestScoreX, label, allTextWidth)
+        ctx.fillText(bestScore, bestScoreX, value, allTextWidth)
 
         // (GAME OVER) OR (YOU WIN) TEXT
         if (gameOver == true || gameWin == true) {
@@ -91,15 +86,16 @@ export default class Draw {
     (#A4AAAE (mercedes gray) color)
     */
     drawSides() {
-    let sideHeight = side / 2
+        let sideHeight = side / 2
 
-    ctx.strokeStyle = this.sideColor
-    ctx.beginPath()
-    ctx.moveTo(sideHeight, height)
-    ctx.lineTo(sideHeight, sideHeight)
-    ctx.lineTo(width - sideHeight, sideHeight)
-    ctx.lineTo(width - sideHeight, height)
-    ctx.stroke()
+        ctx.lineWidth = side
+        ctx.strokeStyle = this.sideColor
+        ctx.beginPath()
+        ctx.moveTo(sideHeight, height)
+        ctx.lineTo(sideHeight, sideHeight)
+        ctx.lineTo(width - sideHeight, sideHeight)
+        ctx.lineTo(width - sideHeight, height)
+        ctx.stroke()
     }
 
     /* DRAW BALL FUNCTION
@@ -107,7 +103,7 @@ export default class Draw {
     (#ffffff (white) color)
     */
     drawBall() {
-        ctx.fillStyle = this.ballColor
+        ctx.fillStyle = enhancementSuper ? enhancement.SUPER.color : this.ballColor
         ctx.fillRect(ball.x - ball.width / 2, ball.y - ball.height / 2, ball.width, ball.height)
     }
 
@@ -116,7 +112,8 @@ export default class Draw {
     (#4285F4 (blue) color)
     */
     drawPaddle() {
-        ctx.fillStyle = this.paddleColor
+        ctx.fillStyle = enhancementGlue ? enhancement.GLUE.color : this.paddleColor
+        ctx.fillStyle = enhancementExtension ? enhancement.EXTENSION.color : this.paddleColor
         ctx.fillRect(paddle.x - paddle.width / 2, paddle.y - paddle.height / 2, paddle.width, paddle.height)
     }
 
@@ -127,7 +124,7 @@ export default class Draw {
     drawBricks() {
         for (let row of bricks) {
             for (let brick of row) {
-                if (brick === null) {
+                if (brick == null) {
                     continue
                 }
 
@@ -136,6 +133,20 @@ export default class Draw {
             }
         }
     }
+
+    /* DRAW ENHANCEMENT FUNCTION
+    The function that is responsible for drawing the enhancements.
+    (rgb (red to greeen) color)
+    */
+   drawEnhancements() {
+        for (let enhancement of enhancements) {
+            // ctx.lineWidth = side / 2
+            // ctx.fillStyle = enhancement.type.color
+            // ctx.strokeStyle = enhancement.type.color
+            // ctx.strokeRect(enhancement.x - enhancement.width / 4, enhancement.y - enhancement.height / 4, enhancement.width / 2, enhancement.height / 2)
+            ctx.fillText(enhancement.type.symbol, enhancement.x, enhancement.y)
+        }
+   }
 
     /* DRAW GAME FUNCTION
     The main game function,
@@ -155,6 +166,7 @@ export default class Draw {
             paddleUpdate(this.deltaTime)
             ballUpdate(this.deltaTime)
             bricksUpdate(this.deltaTime)
+            enhancementUpdate(this.deltaTime)
         }
         
         // GAME ELEMENTS
@@ -164,6 +176,7 @@ export default class Draw {
         this.drawBall()
         this.drawPaddle()
         this.drawBricks()
+        this.drawEnhancements()
 
         // CREATE NEXT GAME LOOP
         requestAnimationFrame(this.drawGame)

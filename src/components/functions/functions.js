@@ -1,19 +1,17 @@
 import Ball from "./ball"
 import Paddle from "./paddle"
 import Brick from "./brick"
-import { ctx, canvas, input, game } from "../constants"
+import Enhancement from "./enhancement"
+import { canvas, input, game, enhancement } from "../constants"
 
-// DIMENSIONS
-export let width, height, side, margin
-
-// GAME VARIABLES
-export let ball, paddle, bricks = [], bricksCount,
+// GAME VARIABLES AND DIMENSIONS
+export let width, height, side, margin,
+           ball, paddle, bricks = [], bricksCount,
+           enhancements = [],enhancementGlue, enhancementSuper, enhancementExtension,
            level, lives, score, bestScore,
            textHight, textWidth,
            gameOver, gameWin
 
-           //let textWidth = width - margin * 2
-           //let margin = side * 5
 /* RESPONSIVE CANVAS DESIGN FUNCTION
 The function responsible for the responsiveness of the canvas.
 */
@@ -21,9 +19,10 @@ export const responsive = () => {
     height = window.innerHeight
     width = window.innerWidth
     side = game.SIDE * (height < width ? height : width)
+    
     canvas.width = width
     canvas.height = height
-    ctx.lineWidth = side
+
     startNewGame()
 }
 
@@ -31,7 +30,7 @@ window.addEventListener("resize", responsive)
 
 // START NEW GAME HANDLER
 export const startNewGame = () => {
-    level = 3 // 0 -- game.MAXIMUM_LEVEL
+    level = 1 // 0 -- game.MAXIMUM_LEVEL
     lives = game.LIVES
     score = 0
 
@@ -50,12 +49,16 @@ export const startNewGame = () => {
 
 // START NEW LEVEL HANDLER
 const startNewLevel = () => {
+    enhancements = []
     playerUpdate()
     createBricks()
 }
 
-// PLAYER (BALL AND PADDLE) UPDATE HANDLER
+// PLAYER (BALL, PADDLE AND ENHANCEMENTS) UPDATE HANDLER
 const playerUpdate = () => {
+    enhancementExtension = false
+    enhancementSuper = false
+    enhancementGlue = false
     paddle = new Paddle()
     ball = new Ball()
 }
@@ -66,17 +69,20 @@ const outOfBounds = () => {
     if (lives == 0) {
         gameOver = true
     }
+
     playerUpdate()
 }
 
 // BALL SPEED HANDLER
 const ballSpeed = (angle) => {
+
     // KEEPS ANGLE BETWEEN 30° AND 150°
     if (angle < Math.PI / 6) {
         angle = Math.PI / 6
     } else if (angle > Math.PI * 5 / 6) {
         angle = Math.PI * 5 / 6
     }
+
     // UPDATES THE SPEED OF THE BALL MOVEMENT IN THE X AND Y COORDINATES
     ball.speedX = ball.speed * Math.cos(angle)
     ball.speedY = -ball.speed * Math.sin(angle)
@@ -84,6 +90,7 @@ const ballSpeed = (angle) => {
 
 // BALL START HANDLER
 export const ballStart = () => {
+    
     // IF BALL IN MOTION
     if (ball.speedY != 0) {
         return false
@@ -117,23 +124,26 @@ export const ballUpdate = (delta) => {
         && ball.y < paddle.y
         && ball.x > paddle.x - paddle.width / 2 - ball.width / 2
         && ball.x < paddle.x + paddle.width / 2 + ball.width / 2) {
-            ball.y = paddle.y - paddle.height / 2 - ball.height / 2
-            ball.speedY = -ball.speedY
 
-            // CHANGES THE BALL BOUNCE ANGLE (BASED ON THE BALL SPIN)
-            let angle = Math.atan2(-ball.speedY, ball.speedX)
-            angle += (Math.random() * Math.PI / 2 - Math.PI / 4) * game.BALL_SPIN
-            ballSpeed(angle)
-    }
+            ball.y = paddle.y - paddle.height / 2 - ball.height / 2
+
+            // GLUE ENHANCEMENT HANDLER
+            if (enhancementGlue == true) {
+                ball.speedX = 0
+                ball.speedY = 0
+            } else {
+                ball.speedY = -ball.speedY
+
+                // CHANGES THE BALL BOUNCE ANGLE (BASED ON THE BALL SPIN)
+                let angle = Math.atan2(-ball.speedY, ball.speedX)
+                angle += (Math.random() * Math.PI / 2 - Math.PI / 4) * game.BALL_SPIN
+                ballSpeed(angle)
+            }
+        }   
 
     // OUT OF BOUNDS HANDLER
     if (ball.y > height) {
         outOfBounds()
-    }
-
-    // MOVES THE BALL ALONG WITH THE PLATFORM (WHEN IT IS STATIC)
-    if (ball.speedY == 0) {
-        ball.x = paddle.x
     }
 }
 
@@ -154,6 +164,7 @@ export const paddleMove = (event) => {
 
 // PADDLE UPDATE HANDLER
 export const paddleUpdate = (delta) => {
+    const paddleX = paddle.x
     paddle.x += paddle.speedX * delta
     
     // PLATFORM STOPS AT SIDES
@@ -161,6 +172,59 @@ export const paddleUpdate = (delta) => {
         paddle.x = side + paddle.width / 2
     } else if (paddle.x > width - side - paddle.width / 2) {
         paddle.x = width - side - paddle.width / 2
+    }
+
+
+    // MOVES THE BALL ALONG WITH THE PLATFORM (WHEN IT IS STATIC)
+    if (ball.speedY == 0 && ball.speedY == 0) {
+        ball.x += paddle.x - paddleX
+    }
+
+    // COLLECT ENHANCEMENTS HANDLER
+    for (let i = enhancements.length - 1; i >= 0; i--) {
+        if (enhancements[i].x + enhancements[i].width / 2 > paddle.x - paddle.width / 2
+            && enhancements[i].x - enhancements[i].width / 2 < paddle.x + paddle.width / 2
+            && enhancements[i].y + enhancements[i].height / 2 > paddle.y - paddle.height / 2
+            && enhancements[i].y - enhancements[i].height / 2 < paddle.y + paddle.height / 2) {
+
+                switch(enhancements[i].type) {
+                    case enhancement.EXTENSION:
+                        if (enhancementExtension == true) {
+                            score += 25
+                        } else {
+                            enhancementExtension = true
+                            paddle.width *= 2
+                        }
+                        break
+                    case enhancement.LIFE:
+                        lives++
+                        if (lives > 3) {
+                            score += 10
+                        }
+                        break
+                    case enhancement.GLUE:
+                        if (enhancementGlue == true) {
+                            score += 10
+                        } else {
+                            enhancementGlue = true
+                        }
+                        break
+                    case enhancement.SUPER:
+                        if (enhancementSuper == true) {
+                            score += 10
+                        } else {
+                            enhancementSuper = true
+                        }
+                        break
+                    case enhancement.DEATH:
+                        lives--
+                        if (lives == 0) {
+                            gameOver = true
+                        }
+                        break
+                }
+            enhancements.splice(i, 1)
+        }
     }
 }
 
@@ -200,7 +264,7 @@ const createBricks = () => {
         textWidth = width - margin * 2
 
         bricks[i] = []
-        bricksCount = columns* rows
+        bricksCount = columns * rows
 
         color = brickColor(grade, supremeGrade)
         score = (supremeGrade - grade) * 2
@@ -221,7 +285,7 @@ const brickColor = (grade, supremeGrade) => {
     // grade = position, supremeGrade = max position
     let section = grade / supremeGrade
 
-    // red = 0, orange = 0.33, yellow = 0.66, green = 1
+    // RGB
     let red, green, blue
 
     if (section <= 0.67) {
@@ -246,9 +310,27 @@ export const bricksUpdate = () => {
         for (let j = 0; j < game.BRICK_COLUMN; j++) {
             if (bricks[i][j] != null && bricks[i][j].collision(ball)) {
                 scoreUpdate(bricks[i][j].score)
+
+                // CREATE ENHANCEMENTS
+                if (Math.random() < game.ENHANCEMENT_CHANCE) {
+                    let enhancementX = bricks[i][j].left + bricks[i][j].width / 2
+                    let enhancementY = bricks[i][j].top + bricks[i][j].width / 2
+
+                    let enhancementSize = bricks[i][j].width / 2
+
+                    let enhancementKeys = Object.keys(enhancement)
+                    let enhancementKey = enhancementKeys[Math.floor(Math.random() * enhancementKeys.length)]
+
+                    enhancements.push(new Enhancement(enhancementX, enhancementY, enhancementSize, enhancement[enhancementKey]))
+                }
+
+                if (enhancementSuper == false) {
+                    ball.speedY = -ball.speedY
+                }
+
                 bricks[i][j] = null
                 bricksCount--
-                ball.speedY = -ball.speedY
+
                 break
             }
         }
@@ -273,5 +355,16 @@ const scoreUpdate = (brickScore) => {
     if (score > bestScore) {
         bestScore = score
         localStorage.setItem(game.SCORE, bestScore)
+    }
+}
+
+// ENHANCEMENT UPDATE HANDLER
+export const enhancementUpdate = (delta) => {
+    for (let i = enhancements.length - 1; i >= 0; i--) {
+        enhancements[i].y += enhancements[i].speedY * delta
+
+        if (enhancements[i].y - enhancements[i].height / 2 > height) {
+            enhancements.splice(i, 1)
+        }
     }
 }

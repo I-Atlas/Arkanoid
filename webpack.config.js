@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 module.exports = {
     mode: "production",
     devtool: "source-map",
-    entry: "./src/new.js",
+    entry: "./src/index.js",
     output: {
         path: path.join(__dirname, "build")
     },
@@ -30,6 +30,6 @@ module.exports = {
         contentBase: "./build"
     },
     plugins: [
-        new HtmlWebpackPlugin({template: './index.html'})
+        new HtmlWebpackPlugin({template: './public/index.html'})
     ]
 }
