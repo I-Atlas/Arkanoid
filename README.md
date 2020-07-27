@@ -1,4 +1,7 @@
 <h1 align="center">
+    <a href="https://github.com/I-Atlas/Arkanoid">
+    <img src="https://imgur.com/O8yYPvV.png" width="400" alt="Arkanoid">
+    </a>
     <br>
     <br>
     Arkanoid
@@ -8,7 +11,7 @@
 
 ## Description
 
-Simple pure JS Arkanoid game
+Pure JS Arkanoid game inspired by Breakout (1976) and Super Breakout (1978) created by Atari
 
 ## Setup
 

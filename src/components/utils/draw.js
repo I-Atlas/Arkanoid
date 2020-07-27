@@ -1,8 +1,8 @@
 import { ctx, game, enhancement } from "../constants"
 import { ballUpdate, paddleUpdate, bricksUpdate, enhancementUpdate,
-         ball, paddle, bricks,
-         enhancements, enhancementExtension, enhancementSuper, enhancementGlue, 
          width, height, side, margin,
+         ball, paddle, bricks,
+         enhancements, enhancementSuper, enhancementGlue, 
          lives, level, score, bestScore,
          textHight, textWidth,
          gameOver, gameWin } from "../functions/functions"
@@ -113,7 +113,6 @@ export default class Draw {
     */
     drawPaddle() {
         ctx.fillStyle = enhancementGlue ? enhancement.GLUE.color : this.paddleColor
-        ctx.fillStyle = enhancementExtension ? enhancement.EXTENSION.color : this.paddleColor
         ctx.fillRect(paddle.x - paddle.width / 2, paddle.y - paddle.height / 2, paddle.width, paddle.height)
     }
 
@@ -140,6 +139,10 @@ export default class Draw {
     */
    drawEnhancements() {
         for (let enhancement of enhancements) {
+
+            
+            /* YOU CAN USE THE CODE BELOW IF THE ENHANCEMENT SYMBOLS ARE NOT EMOJI */
+            
             // ctx.lineWidth = side / 2
             // ctx.fillStyle = enhancement.type.color
             // ctx.strokeStyle = enhancement.type.color
