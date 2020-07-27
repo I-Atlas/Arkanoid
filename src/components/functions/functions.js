@@ -26,11 +26,12 @@ export const responsive = () => {
     startNewGame()
 }
 
+// RESIZE EVENT LISTENER
 window.addEventListener("resize", responsive)
 
 // START NEW GAME HANDLER
 export const startNewGame = () => {
-    level = 1 // 0 -- game.MAXIMUM_LEVEL
+    level = 1 // 0 - test level, game.MAXIMUN_LEVEL - maximum level
     lives = game.LIVES
     score = 0
 
@@ -38,6 +39,7 @@ export const startNewGame = () => {
     gameWin = false
 
     let localScore = localStorage.getItem(game.SCORE)
+
     if (localScore == null) {
         bestScore = 0
     } else {
@@ -49,23 +51,28 @@ export const startNewGame = () => {
 
 // START NEW LEVEL HANDLER
 const startNewLevel = () => {
-    enhancements = []
     playerUpdate()
     createBricks()
 }
 
 // PLAYER (BALL, PADDLE AND ENHANCEMENTS) UPDATE HANDLER
 const playerUpdate = () => {
+    paddle = new Paddle()
+    ball = new Ball()
+    newEnhancements()
+}
+
+// ENHANCEMENTS UPDATER FOR EACH NEW LEVEL AND NEW GAME
+const newEnhancements = () => {
     enhancementExtension = false
     enhancementSuper = false
     enhancementGlue = false
-    paddle = new Paddle()
-    ball = new Ball()
 }
 
 // OUT OF BOTTOM BOUNDS HANDLER
 const outOfBounds = () => {
     lives--
+
     if (lives == 0) {
         gameOver = true
     }
@@ -102,51 +109,6 @@ export const ballStart = () => {
     return true
 }
 
-// BALL UPDATE HANDLER
-export const ballUpdate = (delta) => {
-    ball.x += ball.speedX * delta
-    ball.y += ball.speedY * delta
-
-    // BALL BOUNCE OFF THE SIDES
-    if (ball.x < side + ball.width / 2) {
-        ball.x = side + ball.width / 2
-        ball.speedX = -ball.speedX
-    } else if (ball.x > width - side - ball.width / 2) {
-        ball.x = width - side - ball.width / 2
-        ball.speedX = -ball.speedX
-    } else if (ball.y < side + ball.height / 2) {
-        ball.y = side + ball.height / 2
-        ball.speedY = -ball.speedY
-    }
-
-    // BALL BOUNCE OFF THE PLATFORM
-    if (ball.y > paddle.y - paddle.height / 2 - ball.height / 2
-        && ball.y < paddle.y
-        && ball.x > paddle.x - paddle.width / 2 - ball.width / 2
-        && ball.x < paddle.x + paddle.width / 2 + ball.width / 2) {
-
-            ball.y = paddle.y - paddle.height / 2 - ball.height / 2
-
-            // GLUE ENHANCEMENT HANDLER
-            if (enhancementGlue == true) {
-                ball.speedX = 0
-                ball.speedY = 0
-            } else {
-                ball.speedY = -ball.speedY
-
-                // CHANGES THE BALL BOUNCE ANGLE (BASED ON THE BALL SPIN)
-                let angle = Math.atan2(-ball.speedY, ball.speedX)
-                angle += (Math.random() * Math.PI / 2 - Math.PI / 4) * game.BALL_SPIN
-                ballSpeed(angle)
-            }
-        }   
-
-    // OUT OF BOUNDS HANDLER
-    if (ball.y > height) {
-        outOfBounds()
-    }
-}
-
 // PADDLE MOVEMENT HANDLER
 export const paddleMove = (event) => {
     switch (event) {
@@ -162,78 +124,12 @@ export const paddleMove = (event) => {
     }
 }
 
-// PADDLE UPDATE HANDLER
-export const paddleUpdate = (delta) => {
-    const paddleX = paddle.x
-    paddle.x += paddle.speedX * delta
-    
-    // PLATFORM STOPS AT SIDES
-    if (paddle.x < side + paddle.width / 2) {
-        paddle.x = side + paddle.width / 2
-    } else if (paddle.x > width - side - paddle.width / 2) {
-        paddle.x = width - side - paddle.width / 2
-    }
-
-
-    // MOVES THE BALL ALONG WITH THE PLATFORM (WHEN IT IS STATIC)
-    if (ball.speedY == 0 && ball.speedY == 0) {
-        ball.x += paddle.x - paddleX
-    }
-
-    // COLLECT ENHANCEMENTS HANDLER
-    for (let i = enhancements.length - 1; i >= 0; i--) {
-        if (enhancements[i].x + enhancements[i].width / 2 > paddle.x - paddle.width / 2
-            && enhancements[i].x - enhancements[i].width / 2 < paddle.x + paddle.width / 2
-            && enhancements[i].y + enhancements[i].height / 2 > paddle.y - paddle.height / 2
-            && enhancements[i].y - enhancements[i].height / 2 < paddle.y + paddle.height / 2) {
-
-                switch(enhancements[i].type) {
-                    case enhancement.EXTENSION:
-                        if (enhancementExtension == true) {
-                            score += 25
-                        } else {
-                            enhancementExtension = true
-                            paddle.width *= 2
-                        }
-                        break
-                    case enhancement.LIFE:
-                        lives++
-                        if (lives > 3) {
-                            score += 10
-                        }
-                        break
-                    case enhancement.GLUE:
-                        if (enhancementGlue == true) {
-                            score += 10
-                        } else {
-                            enhancementGlue = true
-                        }
-                        break
-                    case enhancement.SUPER:
-                        if (enhancementSuper == true) {
-                            score += 10
-                        } else {
-                            enhancementSuper = true
-                        }
-                        break
-                    case enhancement.DEATH:
-                        lives--
-                        if (lives == 0) {
-                            gameOver = true
-                        }
-                        break
-                }
-            enhancements.splice(i, 1)
-        }
-    }
-}
-
 /* CREATE BRICKS FUNCTION
 The function responsible for the bricks creation.
 */
 const createBricks = () => {
     let minimumLevelY = side
-    let maximumLevelY = ball.y - ball.height * 2.5
+    let maximumLevelY = ball.y - ball.height * 4.5
 
     let totalSpaceY = maximumLevelY - minimumLevelY
     let totalSpaceX = width - side * 2
@@ -243,7 +139,7 @@ const createBricks = () => {
 
     let gap = side * game.BRICK_GAP
     let columns = game.BRICK_COLUMN
-    let rows = game.BRICK_ROWS + level * 2 - 2
+    let rows = game.BRICK_ROWS + level - 2
 
     let columnWidth = (totalSpaceX - gap) / game.BRICK_COLUMN
 
@@ -302,16 +198,132 @@ const brickColor = (grade, supremeGrade) => {
     return `rgb(${red}, ${green}, ${blue})`
 }
 
-/* BRICKS COLOR FUNCTION
-The function responsible for the bricks and ball collision detection.
-*/
+// BALL UPDATE HANDLER
+export const ballUpdate = (delta) => {
+    ball.x += ball.speedX * delta
+    ball.y += ball.speedY * delta
+
+    // BALL BOUNCE OFF THE SIDES
+    if (ball.x < side + ball.width / 2) {
+        ball.x = side + ball.width / 2
+        ball.speedX = -ball.speedX
+    } else if (ball.x > width - side - ball.width / 2) {
+        ball.x = width - side - ball.width / 2
+        ball.speedX = -ball.speedX
+    } else if (ball.y < side + ball.height / 2) {
+        ball.y = side + ball.height / 2
+        ball.speedY = -ball.speedY
+    }
+
+    // BALL BOUNCE OFF THE PLATFORM
+    if (ball.y > paddle.y - paddle.height / 2 - ball.height / 2
+        && ball.y < paddle.y
+        && ball.x > paddle.x - paddle.width / 2 - ball.width / 2
+        && ball.x < paddle.x + paddle.width / 2 + ball.width / 2) {
+
+            ball.y = paddle.y - paddle.height / 2 - ball.height / 2
+
+            // GLUE ENHANCEMENT HANDLER
+            if (enhancementGlue == true) {
+                ball.speedX = 0
+                ball.speedY = 0
+            } else {
+                ball.speedY = -ball.speedY
+
+                // CHANGES THE BALL BOUNCE ANGLE (BASED ON THE BALL SPIN)
+                let angle = Math.atan2(-ball.speedY, ball.speedX)
+                angle += (Math.random() * Math.PI / 2 - Math.PI / 4) * game.BALL_SPIN
+                ballSpeed(angle)
+            }
+        }   
+
+    // OUT OF BOUNDS HANDLER
+    if (ball.y > height) {
+        outOfBounds()
+    }
+}
+
+// PADDLE UPDATE HANDLER
+export const paddleUpdate = (delta) => {
+    const paddleX = paddle.x
+    paddle.x += paddle.speedX * delta
+    
+    // PLATFORM STOPS AT SIDES
+    if (paddle.x < side + paddle.width / 2) {
+        paddle.x = side + paddle.width / 2
+    } else if (paddle.x > width - side - paddle.width / 2) {
+        paddle.x = width - side - paddle.width / 2
+    }
+
+
+    // MOVES THE BALL ALONG WITH THE PLATFORM (WHEN IT IS STATIC)
+    if (ball.speedY == 0 && ball.speedY == 0) {
+        ball.x += paddle.x - paddleX
+    }
+
+    /* COLLECT ENHANCEMENTS HANDLER
+    An explanation how the enhancements works now is in the file constants.js
+    */
+    for (let i = enhancements.length - 1; i >= 0; i--) {
+        if (enhancements[i].x + enhancements[i].width / 2 > paddle.x - paddle.width / 2
+            && enhancements[i].x - enhancements[i].width / 2 < paddle.x + paddle.width / 2
+            && enhancements[i].y + enhancements[i].height / 2 > paddle.y - paddle.height / 2
+            && enhancements[i].y - enhancements[i].height / 2 < paddle.y + paddle.height / 2) {
+
+                switch(enhancements[i].type) {
+
+                    case enhancement.LIFE:
+                        lives++
+                        if (lives > 3) {
+                            score += 5
+                        }
+                        break
+
+                    case enhancement.DEATH:
+                        lives--
+                        if (lives == 0) {
+                            gameOver = true
+                        }
+                        break    
+
+                    case enhancement.GLUE:
+                        if (enhancementGlue == true) {
+                            score += 10
+                        } else {
+                            enhancementGlue = true
+                        }
+                        break
+
+                    case enhancement.SUPER:
+                        if (enhancementSuper == true) {
+                            score += 15
+                        } else {
+                            enhancementSuper = true
+                        }
+                        break
+
+                    case enhancement.EXTENSION:
+                        if (enhancementExtension == true) {
+                            score += 20
+                        } else {
+                            enhancementExtension = true
+                            paddle.width *= 2
+                        }
+                        break
+                }
+            enhancements.splice(i, 1)
+        }
+    }
+}
+
+// BRICKS UPDATE HANDLER
 export const bricksUpdate = () => {
     for (let i = 0; i < bricks.length; i++) {
         for (let j = 0; j < game.BRICK_COLUMN; j++) {
             if (bricks[i][j] != null && bricks[i][j].collision(ball)) {
                 scoreUpdate(bricks[i][j].score)
 
-                // CREATE ENHANCEMENTS
+                // CREATE ENHANCEMENTS IN BRICKS
                 if (Math.random() < game.ENHANCEMENT_CHANCE) {
                     let enhancementX = bricks[i][j].left + bricks[i][j].width / 2
                     let enhancementY = bricks[i][j].top + bricks[i][j].width / 2
@@ -321,7 +333,10 @@ export const bricksUpdate = () => {
                     let enhancementKeys = Object.keys(enhancement)
                     let enhancementKey = enhancementKeys[Math.floor(Math.random() * enhancementKeys.length)]
 
-                    enhancements.push(new Enhancement(enhancementX, enhancementY, enhancementSize, enhancement[enhancementKey]))
+                    enhancements.push(new Enhancement(enhancementX,
+                                                      enhancementY,
+                                                      enhancementSize,
+                                                      enhancement[enhancementKey]))
                 }
 
                 if (enhancementSuper == false) {
