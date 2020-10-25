@@ -1,11 +1,12 @@
-import { draw } from "./components/constants"
-import { responsive } from "./components/functions/functions"
+import { draw } from "./constants";
+import { responsive } from "./functions";
+import "./index.css";
 
 // CREATE NEW GAME HANDLER
 const createNewGame = () => {
-    requestAnimationFrame(draw.drawGame)
-    responsive()
-}
+  requestAnimationFrame(draw.drawGame);
+  responsive();
+};
 
 // START GAME
-createNewGame()
+createNewGame();
