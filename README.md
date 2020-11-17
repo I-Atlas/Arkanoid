@@ -1,14 +1,11 @@
 # [Arkanoid](https://i-atlas.github.io/arkanoid/)
-![GitHub](https://img.shields.io/github/license/I-Atlas/arkanoid)
-![GitHub deployments](https://img.shields.io/github/deployments/I-Atlas/arkanoid/github-pages)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/I-Atlas/arkanoid)
+![GitHub](https://img.shields.io/github/license/I-Atlas/arkanoid?style=flat-square)
+![GitHub deployments](https://img.shields.io/github/deployments/I-Atlas/arkanoid/github-pages?style=flat-square)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/I-Atlas/arkanoid?style=flat-square)
 
-<div align="center">
-    <a href="https://github.com/I-Atlas">
+<a href="https://github.com/I-Atlas">
     <img src="https://imgur.com/1QnhDPY.png" alt="Arkanoid">
-    </a>
-</div>
-<br>
+</a>
 
 Pure JS Arkanoid game inspired by Breakout (1976) and Super Breakout (1978) created by Atari.
 
@@ -20,11 +17,9 @@ Pure JS Arkanoid game inspired by Breakout (1976) and Super Breakout (1978) crea
 - A clone of the `arkanoid` repo.
 ### Setup
 
-- `cd arkanoid` to go into the project root.
-- `npm install` to install the workspace dependencies.
-### Running locally
-
-- `npm start` to start the development server.
+```
+npm install && npm start
+```
 
 ## 💡 Hints
 
