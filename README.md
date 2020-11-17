@@ -1,28 +1,34 @@
-<h1 align="center">
-    <a href="https://github.com/I-Atlas/Arkanoid">
-    <img src="https://imgur.com/H2GQd1l.png" width="400" alt="Arkanoid">
-    </a>
-    <br>
-    <br>
-    Arkanoid
-    <br>
-    <br>
-</h1>
+# [Arkanoid](https://i-atlas.github.io/arkanoid/)
+![GitHub](https://img.shields.io/github/license/I-Atlas/arkanoid)
+![GitHub deployments](https://img.shields.io/github/deployments/I-Atlas/arkanoid/github-pages)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/I-Atlas/arkanoid)
 
-## Description
+<div align="center">
+    <a href="https://github.com/I-Atlas">
+    <img src="https://imgur.com/1QnhDPY.png" alt="Arkanoid">
+    </a>
+</div>
+<br>
 
 Pure JS Arkanoid game inspired by Breakout (1976) and Super Breakout (1978) created by Atari.
 
-## Hints
+## 🚀 Getting started
+### Requirements
+- [Git](https://git-scm.com/downloads).
+- [Node](https://nodejs.org/en/download/) _(version 10 or greater)_.
+- A fork of the repo _(for any contributions)_.
+- A clone of the `arkanoid` repo.
+### Setup
+
+- `cd arkanoid` to go into the project root.
+- `npm install` to install the workspace dependencies.
+### Running locally
+
+- `npm start` to start the development server.
+
+## 💡 Hints
 
 You can find the hints on the [wiki page](https://github.com/I-Atlas/arkanoid/wiki).
+## 📄 License
 
-## Setup
-
-- First, you need to install dependencies from **package.json** file. To do this, open a terminal and run `npm i`.
-
-- Then you need to create a `build` folder in the **_root_** of the project, if it is not there.
-
-- Then start the terminal and enter `npm run build` - this will collect the project files.
-
-- To start the game just run `npm start`.
+The project is licensed under the [Apache license 2.0](https://github.com/I-Atlas/arkanoid/LICENSE).
