@@ -27,4 +27,4 @@ npm install && npm start
 You can find the hints on the [wiki page](https://github.com/I-Atlas/arkanoid/wiki).
 ## 📄 License
 
-The project is licensed under the [Apache license 2.0](https://github.com/I-Atlas/arkanoid/LICENSE).
+The project is licensed under the [Apache license 2.0](https://github.com/I-Atlas/arkanoid/blob/master/LICENSE).
